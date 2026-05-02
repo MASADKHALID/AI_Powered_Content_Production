@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ContentAI — Niche Content Production</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#0e0f11; --bg2:#161719; --bg3:#1d1e21; --bg4:#222426;
+  --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.13);
+  --text:#f0ede8; --text2:#9b9893; --text3:#5e5c59;
+  --accent:#5DCAA5; --accent-dim:rgba(93,202,165,0.12); --accent-mid:rgba(93,202,165,0.22);
+  --amber:#EF9F27; --amber-dim:rgba(239,159,39,0.12);
+  --purple:#AFA9EC; --purple-dim:rgba(175,169,236,0.12);
+  --coral:#F0997B; --coral-dim:rgba(240,153,123,0.12);
+  --blue:#85B7EB; --blue-dim:rgba(133,183,235,0.12);
+  --font-d:'Fraunces',Georgia,serif;
+  --font-b:'DM Sans',sans-serif;
+  --font-m:'DM Mono',monospace;
+  --r:10px; --rs:6px;
+}
+html { font-size: 14px; background: var(--bg); color: var(--text); font-family: var(--font-b); }
+body { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ── HEADER ── */
+header { display:flex; align-items:center; justify-content:space-between; padding:13px 26px; border-bottom:1px solid var(--border); background:var(--bg); position:sticky; top:0; z-index:100; }
+.logo { font-family:var(--font-d); font-size:19px; font-weight:500; letter-spacing:-0.4px; display:flex; align-items:center; gap:9px; }
+.logo-dot { width:9px; height:9px; border-radius:50%; background:var(--accent); }
+.header-right { display:flex; align-items:center; gap:10px; }
+.hbadge { font-size:10px; font-family:var(--font-m); padding:3px 10px; border-radius:20px; border:1px solid; }
+.hb-green { border-color:rgba(93,202,165,0.35); color:var(--accent); background:var(--accent-dim); }
+.hb-dim { border-color:var(--border2); color:var(--text3); }
+
+/* ── SHELL ── */
+.shell { display:grid; grid-template-columns:224px 1fr; flex:1; }
+
+/* ── SIDEBAR ── */
+aside { background:var(--bg); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:18px 0; position:sticky; top:55px; height:calc(100vh - 55px); overflow-y:auto; }
+.aside-label { font-size:9px; font-family:var(--font-m); letter-spacing:0.12em; color:var(--text3); text-transform:uppercase; padding:0 16px 8px; }
+.niche-btn { display:flex; align-items:center; gap:11px; padding:9px 16px; cursor:pointer; border:none; background:transparent; width:100%; text-align:left; color:var(--text2); font-family:var(--font-b); font-size:13px; border-left:2px solid transparent; transition:all .15s; }
+.niche-btn:hover { color:var(--text); background:var(--bg2); }
+.niche-btn.active { color:var(--text); border-left-color:var(--accent); background:var(--bg2); }
+.ni { width:22px; height:22px; border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0; }
+.ni1{background:var(--purple-dim);color:var(--purple);}
+.ni2{background:var(--accent-dim);color:var(--accent);}
+.ni3{background:var(--coral-dim);color:var(--coral);}
+.ni4{background:var(--blue-dim);color:var(--blue);}
+.ni5{background:var(--amber-dim);color:var(--amber);}
+.aside-div { height:1px; background:var(--border); margin:14px 16px; }
+.plat-btn { display:flex; align-items:center; gap:9px; padding:7px 16px; cursor:pointer; border:none; background:transparent; width:100%; text-align:left; color:var(--text3); font-family:var(--font-b); font-size:12px; transition:all .15s; }
+.plat-btn:hover { color:var(--text2); }
+.plat-btn.active { color:var(--accent); }
+.plat-dot { width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+
+/* Character upload */
+.char-panel { margin:14px 10px 0; background:var(--bg2); border:1px dashed var(--border2); border-radius:var(--r); padding:12px; display:flex; flex-direction:column; gap:8px; }
+.char-label { font-size:9px; font-family:var(--font-m); letter-spacing:0.1em; color:var(--text3); text-transform:uppercase; }
+.char-drop { width:100%; aspect-ratio:1; border-radius:var(--rs); background:var(--bg3); border:1px dashed var(--border2); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; cursor:pointer; transition:border-color .15s; overflow:hidden; position:relative; }
+.char-drop:hover { border-color:var(--accent); }
+.char-drop img { width:100%; height:100%; object-fit:cover; display:none; border-radius:var(--rs); }
+.up-icon { font-size:20px; opacity:0.3; }
+.up-text { font-size:10px; color:var(--text3); text-align:center; line-height:1.4; }
+.char-info-input { width:100%; background:var(--bg3); border:1px solid var(--border2); color:var(--text); font-family:var(--font-b); font-size:11px; padding:7px 9px; border-radius:var(--rs); resize:none; outline:none; transition:border-color .15s; line-height:1.5; }
+.char-info-input:focus { border-color:var(--accent); }
+.char-badge { font-size:10px; font-family:var(--font-m); color:var(--amber); background:var(--amber-dim); border:1px solid rgba(239,159,39,0.2); padding:3px 8px; border-radius:4px; text-align:center; display:none; }
+
+/* ── MAIN ── */
+main { display:flex; flex-direction:column; min-height:calc(100vh - 55px); }
+.main-top { padding:18px 26px 14px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
+.niche-title { font-family:var(--font-d); font-size:23px; font-weight:300; letter-spacing:-0.4px; }
+.niche-desc { font-size:12px; color:var(--text3); margin-top:3px; max-width:460px; line-height:1.5; }
+.top-badges { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; flex-shrink:0; }
+.badge { font-size:10px; font-family:var(--font-m); padding:4px 10px; border-radius:20px; border:1px solid; }
+.b-accent{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+.b-dim{border-color:var(--border2);color:var(--text3);}
+.b-purple{border-color:rgba(175,169,236,0.35);color:var(--purple);background:var(--purple-dim);}
+
+/* Server row */
+.server-row { padding:10px 26px; background:rgba(93,202,165,0.04); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+.srv-label { font-size:10px; font-family:var(--font-m); color:var(--text3); text-transform:uppercase; letter-spacing:0.07em; }
+.srv-url { font-size:12px; font-family:var(--font-m); color:var(--accent); }
+.srv-note { font-size:11px; color:var(--text3); flex:1; }
+.srv-toggle { font-size:11px; font-family:var(--font-m); color:var(--text3); cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
+.srv-toggle:hover { color:var(--text2); }
+.srv-url-row { display:none; padding:8px 26px; background:var(--bg2); border-bottom:1px solid var(--border); align-items:center; gap:9px; }
+
+/* Input */
+.input-section { padding:16px 26px; border-bottom:1px solid var(--border); background:var(--bg2); }
+.input-row { display:flex; gap:9px; align-items:flex-end; }
+.inp-g { display:flex; flex-direction:column; gap:5px; }
+.inp-g.grow { flex:1; }
+.inp-label { font-size:10px; font-family:var(--font-m); color:var(--text3); text-transform:uppercase; letter-spacing:0.07em; }
+input[type="text"], select { background:var(--bg3); border:1px solid var(--border2); color:var(--text); font-family:var(--font-b); font-size:13px; padding:8px 12px; border-radius:var(--rs); outline:none; transition:border-color .15s; }
+input[type="text"]:focus, select:focus { border-color:var(--accent); }
+input[type="text"]::placeholder { color:var(--text3); }
+select option { background:var(--bg3); }
+.gen-btn { padding:8px 22px; background:var(--accent); color:#0a1f18; border:none; border-radius:var(--rs); font-family:var(--font-b); font-size:13px; font-weight:500; cursor:pointer; white-space:nowrap; transition:all .15s; display:flex; align-items:center; gap:7px; }
+.gen-btn:hover { background:#4ab892; }
+.gen-btn:disabled { opacity:0.5; cursor:not-allowed; }
+
+/* Pipeline */
+.pipeline-section { padding:14px 26px; border-bottom:1px solid var(--border); }
+.pipe-track { display:flex; align-items:center; gap:3px; }
+.stage { flex:1; padding:9px 10px; background:var(--bg2); border:1px solid var(--border); border-radius:var(--rs); transition:all .3s; min-width:0; }
+.stage.s-done { border-color:rgba(93,202,165,0.3); background:rgba(93,202,165,0.05); }
+.stage.s-active { border-color:var(--accent); background:var(--accent-dim); animation:pb 1.5s infinite; }
+.stage.s-pending { opacity:0.35; }
+@keyframes pb { 0%,100%{border-color:var(--accent)} 50%{border-color:rgba(93,202,165,0.3)} }
+.st-n { font-size:9px; font-family:var(--font-m); color:var(--text3); margin-bottom:2px; }
+.stage.s-done .st-n, .stage.s-active .st-n { color:var(--accent); }
+.st-name { font-size:11px; font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.st-status { font-size:9px; color:var(--text3); margin-top:2px; font-family:var(--font-m); }
+.stage.s-done .st-status, .stage.s-active .st-status { color:var(--accent); }
+.pipe-arrow { color:var(--border2); font-size:12px; flex-shrink:0; }
+
+/* ── OUTPUT AREA ── */
+.output-area { padding:20px 26px; display:flex; flex-direction:column; gap:20px; flex:1; }
+
+/* Section headers */
+.section-head { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.section-title { font-family:var(--font-m); font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:0.1em; }
+.section-line { flex:1; height:1px; background:var(--border); }
+
+/* ── OVERALL SCRIPT CARD ── */
+.out-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--r); padding:16px; display:flex; flex-direction:column; gap:10px; animation:fu .4s ease both; }
+@keyframes fu { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.card-head { display:flex; align-items:center; justify-content:space-between; }
+.card-title { font-family:var(--font-m); font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.09em; }
+.copy-btn { font-size:10px; font-family:var(--font-m); padding:3px 8px; border-radius:4px; border:1px solid var(--border2); background:transparent; color:var(--text3); cursor:pointer; transition:all .15s; }
+.copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+.card-body { font-size:12.5px; color:var(--text2); line-height:1.65; }
+.sc-hook { background:var(--accent-dim); border-left:2px solid var(--accent); padding:8px 10px; border-radius:0 var(--rs) var(--rs) 0; margin-bottom:8px; font-size:13px; color:var(--text); font-style:italic; font-family:var(--font-d); font-weight:300; }
+.sc-body { font-size:12px; color:var(--text2); line-height:1.7; margin-bottom:8px; }
+.sc-cta { background:var(--amber-dim); border-left:2px solid var(--amber); padding:7px 10px; border-radius:0 var(--rs) var(--rs) 0; font-size:12px; color:var(--amber); }
+
+/* placeholder */
+.ph { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; min-height:90px; gap:7px; }
+.ph .ic { font-size:20px; opacity:0.25; }
+.ph p { font-size:12px; color:var(--text3); text-align:center; }
+
+/* ── SCENE SEQUENCE GRID ── */
+.scenes-grid { display:flex; flex-direction:column; gap:14px; }
+
+/* Single scene card */
+.scene-card {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  overflow:hidden;
+  animation:fu .4s ease both;
+}
+.scene-card-header {
+  display:flex; align-items:center; gap:0;
+  cursor:pointer;
+  user-select:none;
+}
+.scene-num-block {
+  background:var(--bg3);
+  border-right:1px solid var(--border);
+  padding:14px 16px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  min-width:64px;
+  flex-shrink:0;
+}
+.scene-big-num { font-family:var(--font-d); font-size:22px; font-weight:300; color:var(--accent); line-height:1; }
+.scene-time-lbl { font-family:var(--font-m); font-size:9px; color:var(--text3); margin-top:3px; }
+.scene-header-info { flex:1; padding:12px 16px; }
+.scene-visual-preview { font-size:12.5px; color:var(--text2); line-height:1.5; }
+.scene-header-right { padding:12px 14px; display:flex; align-items:center; gap:8px; }
+.scene-chevron { font-size:12px; color:var(--text3); transition:transform .2s; }
+.scene-card.open .scene-chevron { transform:rotate(180deg); }
+
+/* Scene inner content — 2x2 grid of sub-cards */
+.scene-inner { display:none; border-top:1px solid var(--border); padding:14px; }
+.scene-card.open .scene-inner { display:block; }
+.scene-sub-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+/* sub card */
+.sub-card { background:var(--bg3); border:1px solid var(--border); border-radius:var(--rs); padding:12px; display:flex; flex-direction:column; gap:7px; }
+.sub-card.full-width { grid-column:span 2; }
+.sub-head { display:flex; align-items:center; justify-content:space-between; }
+.sub-title { font-family:var(--font-m); font-size:9px; color:var(--text3); text-transform:uppercase; letter-spacing:0.1em; display:flex; align-items:center; gap:6px; }
+.sub-icon { font-size:11px; }
+.sub-body { font-size:12px; color:var(--text2); line-height:1.6; }
+
+/* voiceover */
+.vo-text { font-size:13px; color:var(--text); font-style:italic; font-family:var(--font-d); font-weight:300; line-height:1.6; padding:8px 10px; background:var(--accent-dim); border-left:2px solid var(--accent); border-radius:0 var(--rs) var(--rs) 0; }
+
+/* script note */
+.script-note { font-size:12px; color:var(--text2); line-height:1.6; padding:8px 10px; background:var(--purple-dim); border-left:2px solid var(--purple); border-radius:0 var(--rs) var(--rs) 0; }
+
+/* image prompt */
+.img-prompt-text { font-family:var(--font-m); font-size:11px; color:var(--purple); line-height:1.65; padding:8px 10px; background:var(--bg4); border-radius:var(--rs); border:1px solid var(--border2); }
+
+/* animation prompt */
+.anim-prompt-text { font-size:12px; color:var(--amber); line-height:1.6; padding:8px 10px; background:var(--amber-dim); border-left:2px solid var(--amber); border-radius:0 var(--rs) var(--rs) 0; }
+
+/* ── BOTTOM GRID (thumbnail, tools, seo, tips) ── */
+.bottom-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+.out-card.span2 { grid-column:span 2; }
+
+/* thumbnail */
+.thumb-wrap { display:flex; gap:12px; align-items:flex-start; margin-bottom:8px; }
+.thumb-mock { width:52px; height:92px; border-radius:4px; background:linear-gradient(160deg,#1a1a2e,#16213e); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:8px; font-family:var(--font-m); color:var(--text3); text-align:center; border:1px solid var(--border2); position:relative; overflow:hidden; }
+.thumb-overlay { position:absolute; bottom:5px; left:0; right:0; text-align:center; font-size:6px; font-family:var(--font-m); color:#fff; font-weight:500; padding:0 3px; line-height:1.3; }
+.thumb-info { flex:1; }
+.trow { margin-bottom:6px; }
+.tkey { font-size:10px; font-family:var(--font-m); color:var(--text3); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:2px; }
+.tval { font-size:12px; color:var(--text2); line-height:1.5; }
+.thumb-tip { background:var(--amber-dim); border-left:2px solid var(--amber); padding:7px 10px; border-radius:0 var(--rs) var(--rs) 0; font-size:11.5px; color:var(--amber); }
+
+/* tools */
+.tool-item { display:flex; align-items:flex-start; gap:9px; padding:7px 0; border-bottom:1px solid var(--border); }
+.tool-item:last-child { border-bottom:none; }
+.tool-dot { width:7px; height:7px; border-radius:50%; margin-top:4px; flex-shrink:0; }
+.tool-name { font-size:12.5px; font-weight:500; color:var(--text); margin-bottom:2px; }
+.tool-type { font-size:10px; font-family:var(--font-m); color:var(--text3); font-weight:400; margin-left:4px; }
+.tool-desc { font-size:11.5px; color:var(--text3); line-height:1.5; }
+
+/* seo */
+.seo-grid { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+.seo-row { padding:7px 0; border-bottom:1px solid var(--border); font-size:12px; }
+.seo-row:last-child { border-bottom:none; }
+.seo-key { font-family:var(--font-m); font-size:10px; color:var(--text3); margin-bottom:3px; text-transform:uppercase; letter-spacing:0.07em; }
+.seo-val { color:var(--text2); line-height:1.5; }
+.seo-full { grid-column:span 2; }
+
+/* tips */
+.tip-item { display:flex; align-items:flex-start; gap:9px; padding:6px 0; }
+.tip-num { font-family:var(--font-m); font-size:10px; color:var(--accent); margin-top:2px; flex-shrink:0; }
+.tip-text { font-size:12px; color:var(--text2); line-height:1.55; }
+
+/* error */
+.err-msg { background:rgba(240,153,123,0.1); border:1px solid rgba(240,153,123,0.3); border-radius:var(--rs); padding:11px; font-size:12px; color:var(--coral); line-height:1.6; }
+
+/* loading */
+.spinner { display:inline-block; width:13px; height:13px; border:2px solid rgba(10,31,24,0.3); border-top-color:#0a1f18; border-radius:50%; animation:spin .7s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.dots::after { content:'.'; animation:dd 1.2s infinite; }
+@keyframes dd { 0%{content:'.'}33%{content:'..'}66%{content:'...'} }
+
+/* ── IMAGE GENERATION ── */
+.img-gen-section { margin-top:10px; }
+.img-gen-btn {
+  width:100%; padding:8px 14px;
+  background:transparent; border:1px solid rgba(175,169,236,0.35);
+  color:var(--purple); border-radius:var(--rs);
+  font-family:var(--font-b); font-size:12px; font-weight:500;
+  cursor:pointer; transition:all .2s;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.img-gen-btn:hover { background:var(--purple-dim); border-color:var(--purple); }
+.img-gen-btn:disabled { opacity:0.5; cursor:not-allowed; }
+.img-gen-btn.loading { color:var(--text3); border-color:var(--border2); }
+.img-result { margin-top:10px; border-radius:var(--rs); overflow:hidden; border:1px solid var(--border2); position:relative; background:var(--bg3); }
+.img-result { margin-top:10px; border-radius:var(--rs); overflow:hidden; border:1px solid var(--border2); position:relative; background:var(--bg3); max-width:240px; }
+.img-result img { width:100%; height:auto; display:block; border-radius:var(--rs); }
+.img-result-actions { display:flex; gap:6px; margin-top:8px; }
+.img-dl-btn {
+  flex:1; padding:7px 10px; font-size:11px; font-family:var(--font-m);
+  background:var(--accent-dim); border:1px solid rgba(93,202,165,0.3);
+  color:var(--accent); border-radius:var(--rs); cursor:pointer; transition:all .15s;
+  text-decoration:none; display:flex; align-items:center; justify-content:center; gap:5px;
+}
+.img-dl-btn:hover { background:var(--accent-mid); }
+.img-regen-btn {
+  padding:7px 12px; font-size:11px; font-family:var(--font-m);
+  background:transparent; border:1px solid var(--border2);
+  color:var(--text3); border-radius:var(--rs); cursor:pointer; transition:all .15s;
+}
+.img-regen-btn:hover { color:var(--text2); border-color:var(--border2); }
+.img-loading-box {
+  aspect-ratio:9/16; max-height:280px; background:var(--bg3);
+  border:1px solid var(--border2); border-radius:var(--rs);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+}
+.img-loading-bar { width:60%; height:2px; background:var(--border2); border-radius:2px; overflow:hidden; }
+.img-loading-fill { height:100%; background:var(--purple); border-radius:2px; animation:imgload 2s ease-in-out infinite; }
+@keyframes imgload { 0%{width:0%} 70%{width:90%} 100%{width:90%} }
+.img-error-box { padding:10px; font-size:11px; color:var(--coral); font-family:var(--font-m); background:var(--coral-dim); border-radius:var(--rs); border:1px solid rgba(240,153,123,0.2); }
+
+@media(max-width:960px) {
+  .shell { grid-template-columns:1fr; }
+  aside { display:none; }
+  .bottom-grid { grid-template-columns:1fr 1fr; }
+  .scene-sub-grid { grid-template-columns:1fr; }
+  .sub-card.full-width { grid-column:span 1; }
+}
+@media(max-width:600px) {
+  .bottom-grid { grid-template-columns:1fr; }
+  .out-card.span2 { grid-column:span 1; }
+  .seo-grid { grid-template-columns:1fr; }
+  .seo-full { grid-column:span 1; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span class="logo-dot"></span>ContentAI</div>
+  <div class="header-right">
+    <span class="hbadge hb-green">Groq llama-3.3-70b · free</span>
+    <span class="hbadge" style="border-color:rgba(175,169,236,0.35);color:var(--purple);background:var(--purple-dim);">Pollinations AI · free</span>
+    <span class="hbadge hb-dim">v3.1</span>
+  </div>
+</header>
+
+<div class="shell">
+
+  <!-- ── SIDEBAR ── -->
+  <aside>
+    <div class="aside-label">Content Niches</div>
+    <button class="niche-btn active" data-niche="Low Poly Animation" data-desc="Geometric, faceted 3D-style visuals built from triangulated meshes." onclick="selectNiche(this)">
+      <span class="ni ni1">◆</span>Low Poly Animation
+    </button>
+    <button class="niche-btn" data-niche="Sketch Style" data-desc="Hand-drawn illustration aesthetic. Pencil-stroke visuals that feel personal and artistic." onclick="selectNiche(this)">
+      <span class="ni ni2">✏</span>Sketch Style
+    </button>
+    <button class="niche-btn" data-niche="Exploded View" data-desc="Technical diagrams showing how products or systems break apart, layer by layer." onclick="selectNiche(this)">
+      <span class="ni ni3">⊕</span>Exploded View
+    </button>
+    <button class="niche-btn" data-niche="Facts & Trivia" data-desc="Fast-paced educational content with bold visuals and rapid cuts." onclick="selectNiche(this)">
+      <span class="ni ni4">★</span>Facts & Trivia
+    </button>
+    <button class="niche-btn" data-niche="Story Narration" data-desc="Cinematic narrative storytelling with emotional scenes and voiceover." onclick="selectNiche(this)">
+      <span class="ni ni5">◎</span>Story Narration
+    </button>
+
+    <div class="aside-div"></div>
+    <div class="aside-label">Platform</div>
+    <button class="plat-btn active" onclick="selectPlatform(this,'TikTok')"><span class="plat-dot"></span>TikTok</button>
+    <button class="plat-btn" onclick="selectPlatform(this,'YouTube Shorts')"><span class="plat-dot"></span>YouTube Shorts</button>
+    <button class="plat-btn" onclick="selectPlatform(this,'Facebook Reels')"><span class="plat-dot"></span>Facebook Reels</button>
+    <button class="plat-btn" onclick="selectPlatform(this,'Instagram Reels')"><span class="plat-dot"></span>Instagram Reels</button>
+
+    <div class="aside-div"></div>
+
+    <!-- CHARACTER UPLOAD -->
+    <div class="char-panel">
+      <div class="char-label">Character Reference</div>
+      <div class="char-drop" id="charDrop" onclick="document.getElementById('charFile').click()">
+        <input type="file" id="charFile" accept="image/*" onchange="handleCharUpload(event)" style="display:none;" />
+        <img id="charPreview" alt="character" />
+        <div class="up-icon" id="upIcon">👤</div>
+        <div class="up-text" id="upText">Upload sketch<br/>(PNG, JPG)</div>
+      </div>
+      <textarea class="char-info-input" id="charDesc" rows="3" placeholder="Describe your character e.g. young female astronaut, red hair, blue suit..."></textarea>
+      <div class="char-badge" id="charBadge">✓ Character active in all prompts</div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main>
+
+    <div class="main-top">
+      <div>
+        <div class="niche-title" id="niche-title">Low Poly Animation</div>
+        <div class="niche-desc" id="niche-desc">Geometric, faceted 3D-style visuals built from triangulated meshes.</div>
+      </div>
+      <div class="top-badges">
+        <span class="badge b-accent" id="plat-badge">TikTok</span>
+        <span class="badge b-dim">Free Tools Priority</span>
+        <span class="badge b-purple">9:16 Format</span>
+      </div>
+    </div>
+
+    <!-- Server row -->
+    <div class="server-row">
+      <span class="srv-label">Backend</span>
+      <span class="srv-url">localhost:3001</span>
+      <span class="srv-note">— API key lives in server.js</span>
+      <span class="srv-toggle" onclick="toggleSrvUrl()">change URL</span>
+    </div>
+    <div class="srv-url-row" id="srvUrlRow">
+      <span class="inp-label">Server URL</span>
+      <input type="text" id="serverUrl" value="http://localhost:3001" style="width:220px;font-size:12px;" />
+    </div>
+
+    <!-- Input -->
+    <div class="input-section">
+      <div class="input-row">
+        <div class="inp-g grow">
+          <span class="inp-label">Topic / Keyword</span>
+          <input type="text" id="topicInput" placeholder="e.g. How black holes are formed, History of the Internet..." />
+        </div>
+        <div class="inp-g">
+          <span class="inp-label">Duration</span>
+          <select id="durSel">
+            <option value="30">30 sec</option>
+            <option value="60" selected>60 sec</option>
+            <option value="180">3 min</option>
+          </select>
+        </div>
+        <div class="inp-g">
+          <span class="inp-label">Tone</span>
+          <select id="toneSel">
+            <option>Educational</option>
+            <option>Entertaining</option>
+            <option>Inspirational</option>
+            <option>Dramatic</option>
+          </select>
+        </div>
+        <button class="gen-btn" id="genBtn" onclick="generate()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M6 8l2 2 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Generate
+        </button>
+      </div>
+    </div>
+
+    <!-- Pipeline -->
+    <div class="pipeline-section">
+      <div class="pipe-track">
+        <div class="stage s-pending" id="st0"><div class="st-n">01</div><div class="st-name">Script</div><div class="st-status" id="st0s">waiting</div></div>
+        <div class="pipe-arrow">›</div>
+        <div class="stage s-pending" id="st1"><div class="st-n">02</div><div class="st-name">Scenes</div><div class="st-status" id="st1s">waiting</div></div>
+        <div class="pipe-arrow">›</div>
+        <div class="stage s-pending" id="st2"><div class="st-n">03</div><div class="st-name">Thumbnail</div><div class="st-status" id="st2s">waiting</div></div>
+        <div class="pipe-arrow">›</div>
+        <div class="stage s-pending" id="st3"><div class="st-n">04</div><div class="st-name">Tools</div><div class="st-status" id="st3s">waiting</div></div>
+        <div class="pipe-arrow">›</div>
+        <div class="stage s-pending" id="st4"><div class="st-n">05</div><div class="st-name">SEO</div><div class="st-status" id="st4s">waiting</div></div>
+        <div class="pipe-arrow">›</div>
+        <div class="stage s-pending" id="st5"><div class="st-n">06</div><div class="st-name">Tips</div><div class="st-status" id="st5s">waiting</div></div>
+      </div>
+    </div>
+
+    <!-- ── OUTPUT AREA ── -->
+    <div class="output-area">
+
+      <!-- Overall Script -->
+      <div>
+        <div class="section-head">
+          <span class="section-title">Overall Script</span>
+          <div class="section-line"></div>
+        </div>
+        <div class="out-card" id="card-script">
+          <div class="card-head">
+            <span class="card-title">Full Script</span>
+            <button class="copy-btn" onclick="copyCard('script-body')">copy</button>
+          </div>
+          <div class="card-body" id="script-body">
+            <div class="ph"><div class="ic">📝</div><p>Your AI-generated script will appear here</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scene Sequence -->
+      <div>
+        <div class="section-head">
+          <span class="section-title">Scene Sequence</span>
+          <div class="section-line"></div>
+          <span style="font-size:10px;color:var(--text3);font-family:var(--font-m);white-space:nowrap;">click scene to expand</span>
+        </div>
+        <div class="scenes-grid" id="scenes-grid">
+          <div class="ph" style="min-height:120px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);"><div class="ic">🎬</div><p>5 scene cards with voiceover, script,<br/>image prompt & animation prompt</p></div>
+        </div>
+      </div>
+
+      <!-- Bottom grid: Thumbnail + Tools + SEO + Tips -->
+      <div>
+        <div class="section-head">
+          <span class="section-title">Production Package</span>
+          <div class="section-line"></div>
+        </div>
+        <div class="bottom-grid">
+
+          <!-- Thumbnail -->
+          <div class="out-card" id="card-thumb">
+            <div class="card-head">
+              <span class="card-title">Thumbnail Design</span>
+              <button class="copy-btn" onclick="copyCard('thumb-body')">copy</button>
+            </div>
+            <div class="card-body" id="thumb-body">
+              <div class="ph"><div class="ic">🖼</div><p>Thumbnail concept here</p></div>
+            </div>
+          </div>
+
+          <!-- Tools -->
+          <div class="out-card" id="card-tools">
+            <div class="card-head">
+              <span class="card-title">Animation & Video Tools</span>
+              <button class="copy-btn" onclick="copyCard('tools-body')">copy</button>
+            </div>
+            <div class="card-body" id="tools-body">
+              <div class="ph"><div class="ic">🎞️</div><p>Recommended tools here</p></div>
+            </div>
+          </div>
+
+          <!-- SEO -->
+          <div class="out-card span2" id="card-seo">
+            <div class="card-head">
+              <span class="card-title">SEO Package</span>
+              <button class="copy-btn" onclick="copyCard('seo-body')">copy</button>
+            </div>
+            <div class="card-body" id="seo-body">
+              <div class="ph"><div class="ic">🔍</div><p>Title, tags & description here</p></div>
+            </div>
+          </div>
+
+          <!-- Tips -->
+          <div class="out-card" id="card-tips">
+            <div class="card-head">
+              <span class="card-title">Creator Tips</span>
+              <button class="copy-btn" onclick="copyCard('tips-body')">copy</button>
+            </div>
+            <div class="card-body" id="tips-body">
+              <div class="ph"><div class="ic">💡</div><p>Niche-specific tips here</p></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div><!-- /output-area -->
+  </main>
+</div>
+
+<script>
+let currentNiche = 'Low Poly Animation';
+let currentPlatform = 'TikTok';
+let charImageDataUrl = null;
+let srvUrlVisible = false;
+
+function selectNiche(btn) {
+  document.querySelectorAll('.niche-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentNiche = btn.dataset.niche;
+  document.getElementById('niche-title').textContent = currentNiche;
+  document.getElementById('niche-desc').textContent = btn.dataset.desc;
+}
+function selectPlatform(btn, p) {
+  document.querySelectorAll('.plat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentPlatform = p;
+  document.getElementById('plat-badge').textContent = p;
+}
+function handleCharUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    charImageDataUrl = ev.target.result;
+    const img = document.getElementById('charPreview');
+    img.src = charImageDataUrl;
+    img.style.display = 'block';
+    document.getElementById('upIcon').style.display = 'none';
+    document.getElementById('upText').style.display = 'none';
+    document.getElementById('charBadge').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+function toggleSrvUrl() {
+  srvUrlVisible = !srvUrlVisible;
+  document.getElementById('srvUrlRow').style.display = srvUrlVisible ? 'flex' : 'none';
+}
+function setStage(idx, state, status) {
+  const el = document.getElementById('st' + idx);
+  el.className = 'stage ' + state;
+  document.getElementById('st' + idx + 's').textContent = status;
+}
+function resetStages() {
+  for (let i = 0; i < 6; i++) setStage(i, 's-pending', 'waiting');
+}
+function loadingCard(id) {
+  document.getElementById(id).innerHTML = `<span class="dots" style="color:var(--accent);font-family:var(--font-m);font-size:12px;">generating</span>`;
+}
+function toggleScene(card) {
+  card.classList.toggle('open');
+}
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'copied!';
+    btn.style.color = 'var(--accent)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1500);
+  });
+}
+function copyCard(id) {
+  copyText(document.getElementById(id).innerText, document.getElementById(id).parentElement.querySelector('.copy-btn'));
+}
+
+// ── Render scenes ──────────────────────────────
+function renderScenes(scenes, charImageDataUrl, charDesc) {
+  const grid = document.getElementById('scenes-grid');
+  if (!scenes || !scenes.length) {
+    grid.innerHTML = '<div class="ph" style="min-height:80px;"><div class="ic">⚠️</div><p>No scenes generated</p></div>';
+    return;
+  }
+
+  const charRefHtml = charImageDataUrl
+    ? `<img src="${charImageDataUrl}" style="width:28px;height:28px;border-radius:4px;object-fit:cover;border:1px solid rgba(239,159,39,0.3);flex-shrink:0;" />`
+    : '';
+  const charLabelHtml = charDesc
+    ? `<span style="font-size:10px;color:var(--amber);font-family:var(--font-m);">char active</span>`
+    : '';
+
+  grid.innerHTML = scenes.map((s, i) => `
+    <div class="scene-card" id="scene-card-${i}">
+      <div class="scene-card-header" onclick="toggleScene(document.getElementById('scene-card-${i}'))">
+        <div class="scene-num-block">
+          <div class="scene-big-num">${s.scene || i+1}</div>
+          <div class="scene-time-lbl">${s.time || ''}</div>
+        </div>
+        <div class="scene-header-info">
+          <div class="scene-visual-preview">${s.visual || ''}</div>
+        </div>
+        <div class="scene-header-right">
+          ${charRefHtml}${charLabelHtml}
+          <span class="scene-chevron">▾</span>
+        </div>
+      </div>
+      <div class="scene-inner">
+        <div class="scene-sub-grid">
+
+          <!-- Voiceover -->
+          <div class="sub-card full-width">
+            <div class="sub-head">
+              <span class="sub-title"><span class="sub-icon">🎙️</span>Voiceover</span>
+              <button class="copy-btn" data-copy="${(s.voiceover||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}" onclick="copyData(this)">copy</button>
+            </div>
+            <div class="vo-text">${(s.voiceover||'').replace(/&/g,'&amp;')}</div>
+          </div>
+
+          <!-- Scene Script / Director Note -->
+          <div class="sub-card">
+            <div class="sub-head">
+              <span class="sub-title"><span class="sub-icon">🎬</span>Scene Script</span>
+              <button class="copy-btn" data-copy="${(s.sceneScript||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}" onclick="copyData(this)">copy</button>
+            </div>
+            <div class="script-note">${(s.sceneScript||'').replace(/&/g,'&amp;')}</div>
+          </div>
+
+          <!-- Animation Prompt -->
+          <div class="sub-card">
+            <div class="sub-head">
+              <span class="sub-title"><span class="sub-icon">🎞️</span>Animation Prompt</span>
+              <button class="copy-btn" data-copy="${(s.animationPrompt||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}" onclick="copyData(this)">copy</button>
+            </div>
+            <div class="anim-prompt-text">${(s.animationPrompt||'').replace(/&/g,'&amp;')}</div>
+          </div>
+
+          <!-- Image Prompt + Generate Button -->
+          <div class="sub-card full-width">
+            <div class="sub-head">
+              <span class="sub-title"><span class="sub-icon">🖼️</span>Image Prompt</span>
+              <button class="copy-btn" data-copy="${(s.imagePrompt||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}" onclick="copyData(this)">copy</button>
+            </div>
+            <div class="img-prompt-text">${(s.imagePrompt||'').replace(/&/g,'&amp;')}</div>
+
+            <!-- Pollinations Generate Button -->
+            <div class="img-gen-section">
+              <button class="img-gen-btn" id="imgbtn-${i}" data-prompt="${(s.imagePrompt||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}" onclick="generateImageFromBtn(this, ${i})">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.4"/><circle cx="5.5" cy="5.5" r="1.5" fill="currentColor"/><path d="M1 11l4-4 3 3 2-2 5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Generate Image — Pollinations AI (free)
+              </button>
+              <div id="imgresult-${i}"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  // Auto-open first scene
+  document.getElementById('scene-card-0')?.classList.add('open');
+}
+
+// Helpers for safe attribute/content insertion and event bridging
+function copyData(btn) {
+  let text = btn.dataset.copy || '';
+  text = text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+  copyText(text, btn);
+}
+
+function generateImageFromBtn(btn, sceneIdx) {
+  const prompt = btn.dataset.prompt || '';
+  generateImage(sceneIdx, prompt);
+}
+
+// ── Pollinations image generation ─────────────
+function generateImage(sceneIdx, prompt) {
+  const btn = document.getElementById(`imgbtn-${sceneIdx}`);
+  const resultBox = document.getElementById(`imgresult-${sceneIdx}`);
+  if (!prompt) return;
+  // decode HTML-escaped chars from data attributes
+  const decodedPrompt = String(prompt)
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+
+  const resetBtn = (label) => {
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.4"/><circle cx="5.5" cy="5.5" r="1.5" fill="currentColor"/><path d="M1 11l4-4 3 3 2-2 5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> ${label}`;
+  };
+
+  // Loading state
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btn.innerHTML = `<span class="spinner" style="border-color:rgba(255,255,255,0.15);border-top-color:var(--text3);"></span> Generating image…`;
+
+  resultBox.innerHTML = `
+    <div class="img-loading-box">
+      <div style="font-size:11px;color:var(--text3);font-family:var(--font-m);">Pollinations AI generating…</div>
+      <div class="img-loading-bar"><div class="img-loading-fill"></div></div>
+      <div style="font-size:10px;color:var(--text3);">takes ~10–20 seconds</div>
+    </div>`;
+
+  // Build URL — 9:16 vertical, random seed each time
+  const seed = Math.floor(Math.random() * 99999);
+  const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(decodedPrompt)}?width=540&height=960&seed=${seed}&nologo=true&model=flux`;
+
+  // ✅ Inject <img> directly into DOM — avoids CORS preflight issue
+  const wrapper = document.createElement('div');
+  wrapper.className = 'img-result';
+  wrapper.style.display = 'none';
+
+  const imgEl = document.createElement('img');
+  imgEl.alt = 'Generated scene image';
+  imgEl.crossOrigin = 'anonymous';
+
+  imgEl.onload = () => {
+    resultBox.innerHTML = '';
+    wrapper.style.display = 'block';
+    resultBox.appendChild(wrapper);
+
+    const actions = document.createElement('div');
+    actions.className = 'img-result-actions';
+    actions.innerHTML = `
+      <a class="img-dl-btn" href="${imgUrl}" target="_blank" rel="noopener">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2v8m0 0l-3-3m3 3l3-3M3 13h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Open / Download
+      </a>
+      <button class="img-regen-btn" onclick="generateImage(${sceneIdx}, ${JSON.stringify(decodedPrompt)})">↻ Regenerate</button>`;
+    resultBox.appendChild(actions);
+    resetBtn('↻ Regenerate Image');
+  };
+
+  imgEl.onerror = () => {
+    resultBox.innerHTML = `<div class="img-error-box">⚠ Could not load image. Pollinations may be busy — click Retry.</div>
+      <div class="img-result-actions" style="margin-top:8px;">
+        <button class="img-regen-btn" style="flex:1;" onclick="generateImage(${sceneIdx}, ${JSON.stringify(decodedPrompt)})">↻ Retry</button>
+      </div>`;
+    resetBtn('↻ Retry Generate Image');
+  };
+
+  wrapper.appendChild(imgEl);
+  // Set src AFTER appending to DOM
+  imgEl.src = imgUrl;
+}
+
+// ── Main generate ──────────────────────────────
+async function generate() {
+  const topic = document.getElementById('topicInput').value.trim();
+  const serverBase = (document.getElementById('serverUrl').value || 'http://localhost:3001').replace(/\/$/, '');
+  if (!topic) { document.getElementById('topicInput').focus(); return; }
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generating';
+  resetStages();
+
+  const charDesc = document.getElementById('charDesc').value.trim();
+
+  // Show loading in all cards
+  loadingCard('script-body');
+  loadingCard('thumb-body');
+  loadingCard('tools-body');
+  loadingCard('seo-body');
+  loadingCard('tips-body');
+  document.getElementById('scenes-grid').innerHTML = `<div style="padding:16px;color:var(--accent);font-family:var(--font-m);font-size:12px;" class="dots">building scene sequence</div>`;
+
+  try {
+    setStage(0, 's-active', 'writing…');
+
+    const res = await fetch(`${serverBase}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        topic,
+        niche: currentNiche,
+        platform: currentPlatform,
+        duration: document.getElementById('durSel').value,
+        tone: document.getElementById('toneSel').value,
+        characterDesc: charDesc,
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Server error ' + res.status);
+    }
+
+    const d = await res.json();
+
+    // 1. Script
+    setStage(0, 's-done', '✓ done');
+    document.getElementById('script-body').innerHTML =
+      `<div class="sc-hook">${d.script.hook}</div>
+       <div class="sc-body">${d.script.body}</div>
+       <div class="sc-cta">🔔 ${d.script.cta}</div>`;
+
+    // 2. Scenes
+    setStage(1, 's-active', 'building…');
+    renderScenes(d.scenes, charImageDataUrl, charDesc);
+    setStage(1, 's-done', `✓ ${d.scenes.length} scenes`);
+
+    // 3. Thumbnail
+    setStage(2, 's-active', 'designing…');
+    const t = d.thumbnail;
+    document.getElementById('thumb-body').innerHTML =
+      `<div class="thumb-wrap">
+        <div class="thumb-mock">9:16<div class="thumb-overlay">${(t.textOverlay||'').slice(0,30)}</div></div>
+        <div class="thumb-info">
+          <div class="trow"><div class="tkey">Concept</div><div class="tval">${t.concept}</div></div>
+          <div class="trow"><div class="tkey">Text Overlay</div><div class="tval" style="color:var(--text);font-weight:500;">"${t.textOverlay}"</div></div>
+          <div class="trow"><div class="tkey">Colors</div><div class="tval">${t.colorScheme}</div></div>
+        </div>
+      </div>
+      <div class="thumb-tip">💡 ${t.tip}</div>`;
+    setStage(2, 's-done', '✓ done');
+
+    // 4. Tools
+    setStage(3, 's-active', 'curating…');
+    const cmap = { accent:'#5DCAA5', amber:'#EF9F27', coral:'#F0997B', blue:'#85B7EB' };
+    document.getElementById('tools-body').innerHTML = (d.tools||[]).map(tl =>
+      `<div class="tool-item"><div class="tool-dot" style="background:${cmap[tl.color]||cmap.accent}"></div>
+       <div><div class="tool-name">${tl.name}<span class="tool-type">${tl.type}</span></div><div class="tool-desc">${tl.description}</div></div></div>`
+    ).join('');
+    setStage(3, 's-done', '✓ done');
+
+    // 5. SEO
+    setStage(4, 's-active', 'optimising…');
+    document.getElementById('seo-body').innerHTML =
+      `<div class="seo-grid">
+        <div class="seo-row seo-full"><div class="seo-key">Title</div><div class="seo-val">${d.seo.title}</div></div>
+        <div class="seo-row seo-full"><div class="seo-key">Hashtags</div><div class="seo-val" style="color:var(--accent);font-family:var(--font-m);font-size:11px;">${d.seo.tags}</div></div>
+        <div class="seo-row seo-full"><div class="seo-key">Description</div><div class="seo-val">${d.seo.description}</div></div>
+        <div class="seo-row seo-full"><div class="seo-key">Thumbnail tip</div><div class="seo-val" style="color:var(--amber);">💡 ${d.seo.thumbnail_tip}</div></div>
+      </div>`;
+    setStage(4, 's-done', '✓ done');
+
+    // 6. Tips
+    setStage(5, 's-active', 'advising…');
+    document.getElementById('tips-body').innerHTML = (d.tips||[]).map((tip, i) =>
+      `<div class="tip-item"><div class="tip-num">0${i+1}</div><div class="tip-text">${tip}</div></div>`
+    ).join('');
+    setStage(5, 's-done', '✓ done');
+
+  } catch (err) {
+    resetStages();
+    const errHtml = `<div class="err-msg">⚠ ${err.message}</div>`;
+    document.getElementById('script-body').innerHTML = errHtml;
+    document.getElementById('scenes-grid').innerHTML = errHtml;
+    document.getElementById('thumb-body').innerHTML = errHtml;
+    document.getElementById('tools-body').innerHTML = errHtml;
+    document.getElementById('seo-body').innerHTML = errHtml;
+    document.getElementById('tips-body').innerHTML = errHtml;
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M6 8l2 2 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Generate`;
+}
+
+document.getElementById('topicInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') generate();
+});
+</script>
+</body>
+</html>
