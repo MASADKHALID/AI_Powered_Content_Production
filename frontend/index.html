@@ -370,12 +370,16 @@ select option { background:var(--bg3); }
     <div class="server-row">
       <span class="srv-label">Backend</span>
       <span class="srv-url">localhost:3001</span>
-      <span class="srv-note">— API key lives in server.js</span>
+      <span class="srv-note">— enter your Groq key below and the backend will use it</span>
       <span class="srv-toggle" onclick="toggleSrvUrl()">change URL</span>
     </div>
     <div class="srv-url-row" id="srvUrlRow">
       <span class="inp-label">Server URL</span>
       <input type="text" id="serverUrl" value="http://localhost:3001" style="width:220px;font-size:12px;" />
+    </div>
+    <div class="srv-url-row" id="apiKeyRow" style="display:flex;">
+      <span class="inp-label">Groq API Key</span>
+      <input type="password" id="groqApiKey" placeholder="gsk_..." style="width:220px;font-size:12px;" />
     </div>
 
     <!-- Input -->
@@ -757,7 +761,9 @@ function generateImage(sceneIdx, prompt) {
 async function generate() {
   const topic = document.getElementById('topicInput').value.trim();
   const serverBase = (document.getElementById('serverUrl').value || 'http://localhost:3001').replace(/\/$/, '');
+  const groqApiKey = document.getElementById('groqApiKey').value.trim();
   if (!topic) { document.getElementById('topicInput').focus(); return; }
+  if (!groqApiKey) { document.getElementById('groqApiKey').focus(); return; }
 
   const btn = document.getElementById('genBtn');
   btn.disabled = true;
@@ -787,6 +793,7 @@ async function generate() {
         duration: document.getElementById('durSel').value,
         tone: document.getElementById('toneSel').value,
         characterDesc: charDesc,
+        apiKey: groqApiKey,
       })
     });
 

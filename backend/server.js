@@ -12,31 +12,17 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "5mb" }));
 
-// ══════════════════════════════════════════════
-//  Set the environment variable `GROQ_API_KEY` when running.
-//  Get a free key at: https://console.groq.com/keys
-// ══════════════════════════════════════════════
-const GROQ_API_KEY = process.env.GROQ_API_KEY;
-// ══════════════════════════════════════════════
-
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_MODEL   = "llama-3.3-70b-versatile"; // free, fast, powerful
 const PORT         = 3001;
 
-// ── Startup check ─────────────────────────────
-if (!GROQ_API_KEY) {
-  console.error("❌  No Groq API key found!\n    Set the GROQ_API_KEY environment variable before starting the server.");
-  console.error("    Get a free key at: https://console.groq.com/keys");
-  process.exit(1);
-}
-
 // ── Helper: call Groq ──────────────────────────
-async function callGroq(systemPrompt, userPrompt) {
+async function callGroq(systemPrompt, userPrompt, apiKey) {
   const res = await fetch(GROQ_API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${GROQ_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       model: GROQ_MODEL,
@@ -64,10 +50,14 @@ function safeJSON(raw, fallback) {
 
 // ── POST /api/generate ─────────────────────────
 app.post("/api/generate", async (req, res) => {
-  const { topic, niche, platform, duration, tone, characterDesc } = req.body;
+  const { topic, niche, platform, duration, tone, characterDesc, apiKey } = req.body;
 
   if (!topic) {
     return res.status(400).json({ error: "topic is required" });
+  }
+
+  if (!apiKey) {
+    return res.status(400).json({ error: "apiKey is required" });
   }
 
   const charNote = characterDesc
@@ -80,7 +70,8 @@ app.post("/api/generate", async (req, res) => {
     const scriptRaw = await callGroq(
       `You are an expert short-form content scriptwriter for ${platform} in ${tone} tone. Niche: ${niche}.
 Return ONLY valid JSON with keys: hook (1-2 punchy sentences), body (3-5 sentences), cta (1 sentence). No markdown.`,
-      `Topic: "${topic}". Duration: ${duration}s. Niche: ${niche}. Platform: ${platform}.${charNote}`
+      `Topic: "${topic}". Duration: ${duration}s. Niche: ${niche}. Platform: ${platform}.${charNote}`,
+      apiKey
     );
     const script = safeJSON(scriptRaw, {
       hook: scriptRaw.slice(0, 120),
@@ -102,7 +93,8 @@ Return ONLY a valid JSON array of 5 scene objects. Each object must have ALL of 
 - imagePrompt: (detailed AI image generation prompt for this scene in ${niche} style, 40-50 words, include "--ar 9:16")
 - animationPrompt: (animation/motion instruction for this scene — what moves, how, speed, 1-2 sentences)
 No markdown. Return ONLY the JSON array.`,
-      `Topic: "${topic}". Overall script body: "${script.body}". Duration: ${duration}s total.${charNote}`
+      `Topic: "${topic}". Overall script body: "${script.body}". Duration: ${duration}s total.${charNote}`,
+      apiKey
     );
 
     const scenes = safeJSON(scenesRaw, [
@@ -120,7 +112,8 @@ No markdown. Return ONLY the JSON array.`,
     const thumbRaw = await callGroq(
       `You are a viral thumbnail designer for ${platform}.
 Return ONLY valid JSON: { concept (2 sentences), textOverlay (max 6 words), colorScheme (2-3 colors), tip (1 sentence pro tip) }. No markdown.`,
-      `Topic: "${topic}". Niche: ${niche}. Tone: ${tone}.${charNote}`
+      `Topic: "${topic}". Niche: ${niche}. Tone: ${tone}.${charNote}`,
+      apiKey
     );
     const thumbnail = safeJSON(thumbRaw, {
       concept: `High-contrast ${niche} style image of ${topic}`,
@@ -133,7 +126,8 @@ Return ONLY valid JSON: { concept (2 sentences), textOverlay (max 6 words), colo
     const animRaw = await callGroq(
       `You are a content automation expert for ${niche} videos on ${platform}.
 Return ONLY a valid JSON array of 4 tool objects: {name, type (Free/Freemium/Paid), color (one of: accent, amber, coral, blue), description (1 sentence on how to use for this niche)}. Prioritize free tools. No markdown.`,
-      `Niche: ${niche}. Platform: ${platform}. Topic: "${topic}".`
+      `Niche: ${niche}. Platform: ${platform}. Topic: "${topic}".`,
+      apiKey
     );
     const tools = safeJSON(animRaw, [
       { name: "CapCut", type: "Free", color: "accent", description: "Add transitions and music to your scenes." },
@@ -143,7 +137,8 @@ Return ONLY a valid JSON array of 4 tool objects: {name, type (Free/Freemium/Pai
     const seoRaw = await callGroq(
       `You are an SEO expert for ${platform} short-form video.
 Return ONLY valid JSON: { title (under 60 chars, 1-2 emojis), tags (8-10 hashtags string), description (2-3 sentences), thumbnail_tip (1 sentence) }. No markdown.`,
-      `Topic: "${topic}". Niche: ${niche}. Platform: ${platform}. Tone: ${tone}.`
+      `Topic: "${topic}". Niche: ${niche}. Platform: ${platform}. Tone: ${tone}.`,
+      apiKey
     );
     const seo = safeJSON(seoRaw, {
       title: topic,
@@ -156,7 +151,8 @@ Return ONLY valid JSON: { title (under 60 chars, 1-2 emojis), tags (8-10 hashtag
     const tipsRaw = await callGroq(
       `You are an expert ${niche} content creator on ${platform}.
 Return ONLY a valid JSON array of 5 short actionable tip strings (under 20 words each). No markdown.`,
-      `Topic: "${topic}". Niche: ${niche}. Platform: ${platform}. Focus on free tools, workflow, and growth.`
+      `Topic: "${topic}". Niche: ${niche}. Platform: ${platform}. Focus on free tools, workflow, and growth.`,
+      apiKey
     );
     const tips = safeJSON(tipsRaw, [
       "Post consistently at least 3 times per week for best growth.",
@@ -177,5 +173,5 @@ app.get("/api/health", (_, res) => res.json({ status: "ok", model: GROQ_MODEL })
 app.listen(PORT, () => {
   console.log(`\n✅  ContentAI backend running → http://localhost:${PORT}`);
   console.log(`    Model : ${GROQ_MODEL} (Groq free tier)`);
-  console.log(`    Key   : ${GROQ_API_KEY.slice(0, 8)}••••••••••••••\n`);
+  console.log(`    Key   : supplied per request from the frontend\n`);
 });
